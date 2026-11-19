@@ -25,6 +25,16 @@ back from the phone's accelerometer, each shown over its spectrogram.
 The sentence is synthetic text-to-speech, played through the phone's own speaker. The phone
 recorded it with its accelerometer only; the app has no microphone permission.
 
+**Real voice through bone ([39-second video](docs/placements.mp4)):** the phone pressed to the
+throat and then the cheekbone while humming, then counting from one to ten. The sensor only
+reaches ~199 Hz, so you hear the voice's pitch and rhythm, not words. Use headphones: most phone
+and laptop speakers can't play sound this low.
+
+| Clip | What you hear |
+|---|---|
+| [5_voice_throat.wav](docs/audio/5_voice_throat.wav) | Throat: voice +27 dB (hum) / +23 dB (count) above quiet |
+| [6_voice_cheekbone.wav](docs/audio/6_voice_cheekbone.wav) | Cheekbone: voice +22 dB (hum) / +14 dB (count) above quiet |
+
 ## Results
 
 Tested on an Oppo CPH2263 (Android 13, ST LSM6DS3C accelerometer). Android exposes it at about
@@ -213,8 +223,9 @@ Real voice through bone (follow the laptop's spoken instructions):
 ./hum_test.sh temple    # any placement name: jaw, cheekbone, temple, throat, ...
 ```
 
-To rebuild the clips and demo video in `docs/` from your own results (after running `speech 10`,
-`shift 16` and `cshift 16`):
+To rebuild the clips and both videos in `docs/` from your own results (after running
+`speech 10`, `shift 16`, `cshift 16`, and `./hum_test.sh` for each place listed in `PLACES`
+in `make_demo.py`):
 
 ```bash
 python3 make_demo.py
