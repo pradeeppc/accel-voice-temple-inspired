@@ -43,6 +43,20 @@ Why the plain 10x slowdown fails: [docs/plain_slowdown.png](docs/plain_slowdown.
 - **Single runs.** Each placement was measured once, so differences of a few dB are within
   run-to-run variation.
 
+#### Phone accelerometers vs. what speech needs
+
+A sensor can only capture vibrations up to half its sampling rate, so no current phone gets
+close to what words need.
+
+| Device | Fastest accelerometer rate apps can use | Highest sound frequency it can capture |
+|---|---|---|
+| Oppo CPH2263 (this project) | about 400 Hz (398 Hz measured) | about 199 Hz |
+| Android flagships (Samsung Galaxy S, Google Pixel), typically | about 400–500 Hz | about 200–250 Hz |
+| iPhone | about 100 Hz | about 50 Hz |
+| **Needed for words** | 3,000+ Hz (Temple: 16,000 Hz, per its maker) | 1,500–8,000 Hz |
+
+Only the Oppo row was measured in this project. The other phone rows are typical values.
+
 ## How it works
 
 1. **`app/`**: an Android app that records the accelerometer and gyroscope as fast as the
