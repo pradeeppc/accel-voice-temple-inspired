@@ -28,7 +28,7 @@ OUT_AUDIO = ROOT / "docs" / "audio"
 WORK = ROOT / "build" / "demo"
 W, H, FPS = 1280, 720, 30
 AX = (0.07, 0.10, 0.90, 0.62)          # spectrogram axes: left, bottom, width, height (figure fraction)
-REPO = "github.com/pradeeppc/accel-voice"
+REPO = "github.com/pradeeppc/accel-voice-temple-inspired"
 
 CLIPS = [
     ("audio/shift_ref16.wav", "1_original.wav", -20,
