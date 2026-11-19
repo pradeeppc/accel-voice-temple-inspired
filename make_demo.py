@@ -175,10 +175,37 @@ def place_items(first_number):
     return items
 
 
+def placements_image():
+    """docs/placements.png: one accelerometer spectrogram per place in PLACES (README picture)."""
+    places = [p for p in PLACES if (ROOT / "data" / f"hum_{p}.csv").exists()]
+    if not places:
+        return
+    fig, axes = plt.subplots(len(places), 1, figsize=(10, 2.5 * len(places)), sharex=True, squeeze=False)
+    for ax, place in zip(axes[:, 0], places):
+        sensors, _ = load(ROOT / "data" / f"hum_{place}.csv")
+        t, xyz = sensors["a"]
+        tg, xyz, fs = uniform(t, xyz)
+        f, tt, s = spectrogram(xyz[:, 2], fs, nperseg=128, noverlap=96)
+        db = 10 * np.log10(s + 1e-20)
+        ax.pcolormesh(tt + tg[0], f, db, shading="auto", cmap="magma", vmin=db.max() - 60, vmax=db.max())
+        ax.set_title(f"{place} (accelerometer z)", fontsize=10)
+        ax.set_ylabel("Hz")
+        for label, (a, b) in (("hum", HUM), ("count", COUNT)):
+            ax.axvspan(a, b, color="cyan", alpha=0.08)
+            ax.text((a + b) / 2, 185, label, color="cyan", ha="center", fontsize=9)
+    axes[-1, 0].set_xlabel("seconds")
+    fig.tight_layout()
+    out = ROOT / "docs" / "placements.png"
+    fig.savefig(out, dpi=100)
+    plt.close(fig)
+    print(f"wrote {out}")
+
+
 def main():
     OUT_AUDIO.mkdir(parents=True, exist_ok=True)
     build_video("demo", ("Speech picked up by a phone's\naccelerometer, not its microphone",
                          "Inspired by Deepinder Goyal's Temple"), sentence_items())
+    placements_image()
     items = place_items(len(CLIPS) + 1)
     if items:
         build_video("placements", ("Real voice through bone,\npicked up by a phone's accelerometer",

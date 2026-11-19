@@ -54,8 +54,8 @@ Tested on an Oppo CPH2263 (Android 13, ST LSM6DS3C accelerometer). Android expos
 *Top: the original sentence. Middle: rebuilt from the accelerometer (slowed 16x, shifted, companded).*
 
 ![Placements](docs/placements.png)
-*Humming, then counting 1-10, with the phone pressed to four places. Voice level above quiet
-(hum / count): temple +28 / +23 dB, throat +27 / +23 dB, cheekbone +22 / +14 dB, jaw +17 / +15 dB.*
+*Humming, then counting 1-10, with the phone pressed to the throat and the cheekbone. Voice level
+above quiet (hum / count): throat +27 / +23 dB, cheekbone +22 / +14 dB.*
 
 Why the plain 10x slowdown fails: [docs/plain_slowdown.png](docs/plain_slowdown.png).
 
@@ -164,13 +164,13 @@ sequenceDiagram
     participant L as Laptop (hum_test.sh)
     participant P as Phone (AccelVoice)
     participant U as You
-    L->>U: "Press the phone firmly against your temple"
+    L->>U: "Press the phone firmly against your throat"
     L->>P: adb: record sensors for 30 s, no sound
     L->>U: "Stay quiet" (0-6 s, noise baseline)
     L->>U: "Now hum, low and steady" (6-14 s)
     L->>U: "Now count slowly from one to ten" (14-24 s)
     L->>U: "Stop. Stay quiet" (24-30 s)
-    P-->>L: adb pull hum_temple.csv
+    P-->>L: adb pull hum_throat.csv
     L->>L: analyze.py: voice band 70-195 Hz vs quiet, spectrogram
 ```
 
@@ -220,7 +220,7 @@ Put the phone flat on a table, unlocked, with nothing touching it:
 Real voice through bone (follow the laptop's spoken instructions):
 
 ```bash
-./hum_test.sh temple    # any placement name: jaw, cheekbone, temple, throat, ...
+./hum_test.sh throat    # any placement name: throat, cheekbone, ...
 ```
 
 To rebuild the clips and both videos in `docs/` from your own results (after running
