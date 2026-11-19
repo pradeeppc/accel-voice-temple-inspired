@@ -1,7 +1,11 @@
 # accel-voice
 
-Picking up speech with a phone's **accelerometer** instead of its microphone, inspired by
-bone-conduction voice wearables, which hear the wearer through skull vibration.
+Picking up speech with a phone's **accelerometer** instead of its microphone.
+
+Inspired by **Temple**, Deepinder Goyal's wearable that hears the wearer's voice through skull
+vibration rather than through the air. According to its maker, it uses two accelerometers that
+switch up to 16 kHz sampling when you double-tap it. This project asks how far you can get
+with the accelerometer already inside an ordinary phone. It isn't affiliated with Temple.
 
 Everything runs on an ordinary Android phone plus a laptop: a tiny recorder app (no Gradle,
 no Android Studio) and Python scripts that rebuild audio from the sensor readings.
