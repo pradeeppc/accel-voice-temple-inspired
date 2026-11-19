@@ -5,7 +5,7 @@ Picking up speech with a phone's **accelerometer** instead of its microphone.
 Inspired by **Temple**, Deepinder Goyal's wearable that hears the wearer's voice through skull
 vibration rather than through the air. According to its maker, it uses two accelerometers that
 switch up to 16 kHz sampling when you double-tap it. This project asks how far you can get
-with the accelerometer already inside an ordinary phone. It isn't affiliated with Temple.
+with the accelerometer already inside an ordinary phone.
 
 Everything runs on an ordinary Android phone plus a laptop: a tiny recorder app (no Gradle,
 no Android Studio) and Python scripts that rebuild audio from the sensor readings.
@@ -58,12 +58,101 @@ Why the plain 10x slowdown fails: [docs/plain_slowdown.png](docs/plain_slowdown.
    `hum_test.sh` speaks its instructions through the laptop, so you can keep the phone pressed
    to your head.
 
+### System overview
+
+```mermaid
+flowchart LR
+    subgraph Laptop
+        A["make_audio.py<br/>makes the test sound"]
+        R["run.sh / hum_test.sh<br/>drives the phone"]
+        E["analyze.py<br/>rebuilds the audio"]
+        O["WAV + spectrogram<br/>+ scores"]
+    end
+    subgraph Phone["Phone: AccelVoice app"]
+        P["Speaker plays<br/>the test sound"]
+        S["Accelerometer + gyroscope<br/>~398 samples/s"]
+        C["CSV file<br/>sensor, t_ns, x, y, z"]
+    end
+    A -->|"adb push .wav"| P
+    R -->|"adb: start recording"| S
+    P -->|"shakes the phone body"| S
+    S --> C
+    C -->|"adb pull"| E
+    E --> O
+```
+
+### Signal path: how the sentence gets through a 398 Hz sensor (`cshift`)
+
+The phone's speaker only moves the phone above ~120 Hz, and the sensor only sees up to ~199 Hz.
+So the speech is slowed down and shifted into the band the speaker reproduces well. The
+sensor's aliasing folds that band into its visible range, and `analyze.py` reverses every step.
+
+```mermaid
+flowchart TD
+    subgraph T["make_audio.py: prepare the sound"]
+        T1["Test sentence<br/>text-to-speech, 16 kHz"]
+        T2["Band-pass<br/>250-1900 Hz"]
+        T3["Pre-emphasis + 2:1 compression<br/>lifts the weak highs and quiet parts"]
+        T4["Slow down 16x<br/>15.6-119 Hz"]
+        T5["Shift up 269 Hz, single-sideband<br/>285-388 Hz"]
+        T1 --> T2 --> T3 --> T4 --> T5
+    end
+    subgraph Ph["Phone: the physical channel"]
+        P1["Phone speaker shakes the phone<br/>works well at 285-390 Hz"]
+        P2["Accelerometer samples at 398 Hz<br/>band folds down to 10-113 Hz, mirrored"]
+        P1 --> P2
+    end
+    subgraph Rx["analyze.py: undo every step"]
+        R1["Even time grid, band-pass 10-113 Hz,<br/>pick the cleanest axis"]
+        R2["Subtract background noise<br/>measured in the silent lead-in"]
+        R3["Unfold the mirror, shift back down<br/>15.6-119 Hz"]
+        R4["Speed up 16x<br/>250-1900 Hz"]
+        R5["Expand + de-emphasis<br/>undoes the compression"]
+        R6["Recovered sentence<br/>.wav + spectrogram + score"]
+        R1 --> R2 --> R3 --> R4 --> R5 --> R6
+    end
+    T5 --> P1
+    P2 -->|"CSV via adb"| R1
+```
+
+### Real-voice test (`hum_test.sh`)
+
+No sound is played. The laptop speaks the steps, which don't register on the sensor, while the
+phone records your voice through bone.
+
+```mermaid
+sequenceDiagram
+    participant L as Laptop (hum_test.sh)
+    participant P as Phone (AccelVoice)
+    participant U as You
+    L->>U: "Press the phone firmly against your temple"
+    L->>P: adb: record sensors for 30 s, no sound
+    L->>U: "Stay quiet" (0-6 s, noise baseline)
+    L->>U: "Now hum, low and steady" (6-14 s)
+    L->>U: "Now count slowly from one to ten" (14-24 s)
+    L->>U: "Stop. Stay quiet" (24-30 s)
+    P-->>L: adb pull hum_temple.csv
+    L->>L: analyze.py: voice band 70-195 Hz vs quiet, spectrogram
+```
+
+### Building the app without Gradle (`build.sh`)
+
+```mermaid
+flowchart LR
+    J["MainActivity.java"] -->|"ecj<br/>Eclipse compiler"| K[".class files"]
+    K -->|"d8"| D["classes.dex"]
+    M["AndroidManifest.xml"] -->|"aapt2 link"| U["unsigned.apk"]
+    D -->|"zip in"| U
+    U -->|"zipalign + apksigner"| APK["accelvoice.apk"]
+    APK -->|"adb install"| PH["Phone"]
+```
+
 ## Setup
 
 Requirements: Linux, Java 17+ runtime, Python 3 with `numpy scipy pandas matplotlib`,
 `ffmpeg` (its built-in flite text-to-speech makes the test sentence), `adb`, `bc`, `paplay`.
 
-Install the Android build tools (you'll be asked to accept the SDK license):
+Install the Android build tools
 
 ```bash
 # Android command-line tools from https://developer.android.com/studio#command-tools,
