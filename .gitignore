@@ -1,13 +1,13 @@
 # build output
-build/
+/build/
 __pycache__/
 *.pyc
 
 # generated test audio and spoken cues (make_audio.py / hum_test.sh recreate them)
-audio/
+/audio/
 
 # recordings and analysis output (personal sensor data; kept locally)
-data/
+/data/
 
 # downloaded compiler and local signing key (build.sh recreates both)
 tools/ecj.jar

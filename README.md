@@ -10,6 +10,21 @@ accelerometer already inside an ordinary phone.
 Everything runs on an ordinary Android phone plus a laptop: a tiny recorder app (no Gradle,
 no Android Studio) and Python scripts that rebuild audio from the sensor readings.
 
+## Listen
+
+**[Watch the 30-second demo, with sound](docs/demo.mp4)**: the original sentence, then what came
+back from the phone's accelerometer, each shown over its spectrogram.
+
+| Clip | What you hear |
+|---|---|
+| [1_original.wav](docs/audio/1_original.wav) | The test sentence (250-1900 Hz) that the phone has to carry |
+| [2_slowed10x_failed.wav](docs/audio/2_slowed10x_failed.wav) | Slowed 10x and recovered: only noise comes back |
+| [3_shifted_recovered.wav](docs/audio/3_shifted_recovered.wav) | Slowed 16x and shifted to 285-390 Hz: the words come back, with hiss |
+| [4_shifted_companded_recovered.wav](docs/audio/4_shifted_companded_recovered.wav) | Plus pre-emphasis and companding: quiet pauses, some hiss left in the words |
+
+The sentence is synthetic text-to-speech, played through the phone's own speaker. The phone
+recorded it with its accelerometer only; the app has no microphone permission.
+
 ## Results
 
 Tested on an Oppo CPH2263 (Android 13, ST LSM6DS3C accelerometer). Android exposes it at about
@@ -196,6 +211,13 @@ Real voice through bone (follow the laptop's spoken instructions):
 
 ```bash
 ./hum_test.sh temple    # any placement name: jaw, cheekbone, temple, throat, ...
+```
+
+To rebuild the clips and demo video in `docs/` from your own results (after running `speech 10`,
+`shift 16` and `cshift 16`):
+
+```bash
+python3 make_demo.py
 ```
 
 Outputs go to `data/`: the raw CSV, rebuilt WAVs and a spectrogram PNG. Test sounds are
